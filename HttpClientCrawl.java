@@ -1,10 +1,13 @@
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
+import java.io.File;
 import java.io.FileInputStream;
+import java.io.FileOutputStream;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.io.OutputStreamWriter;
 import java.net.URL;
 import java.net.URLConnection;
 import java.util.HashMap;
@@ -21,7 +24,7 @@ public class HttpClientCrawl {
 		String mark;
 		String value;
 		Set<Double> set = new TreeSet<Double>();
-		Object[] db = set.toArray();
+		
 		for(;(line=reader.readLine())!=null;){  
 			mark = line.split("`")[2];
 			remark = Double.valueOf(mark);
@@ -34,16 +37,18 @@ public class HttpClientCrawl {
 			}
 		}
 		
-		
-		StringBuffer sb = new StringBuffer("序号,书名,评分,评价人数,作者,出版社,出版日期,价格");
+		Object[] db = set.toArray();
+		StringBuffer sb = new StringBuffer("序号,书名,评分,评价人数,作者,出版社,出版日期,价格\n");
 		String content ;
 		String[] itemArr;
 		String[] detailArr;
 		int count = 0;
 		for(int i=db.length-1;i>=0;i--){
-			content = map.get(db[i]);
+			content = map.get(db[i]+"");
+			content = content.replaceAll(",", " ");
 			itemArr = content.split("\n");
 			for(String str : itemArr){
+			   if("".equals(str))continue;
 			   sb.append(count).append(",")
 			     .append(str.split("`")[0]).append(",")
 			     .append(str.split("`")[2]).append(",")
@@ -61,16 +66,16 @@ public class HttpClientCrawl {
 				     .append(detailArr[2]).append(",")
 				     .append(detailArr[3]).append(",");
 			   }else{
-				   sb.append(str);
+				   sb.append(detailArr[0]);
 			   }
 			   sb.append("\n");
 			}
 		}
-		FileWriter fw = new FileWriter("result.txt");
-		BufferedWriter bw = new BufferedWriter(fw);
-		bw.write(sb.toString());
-		bw.close();
-		fw.close();
+		
+		OutputStreamWriter fos = new OutputStreamWriter(new FileOutputStream(new File("result.csv")), "GBK"); 
+		fos.write(sb.toString()); 
+		fos.flush(); 
+		fos.close();
 		
 		reader.close();
 	}
